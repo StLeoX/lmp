@@ -1,12 +1,13 @@
 #! /usr/bin/python3
 # -*- coding:utf-8 -*-
 from settings.const import DatabaseType
+from settings.init_db import influx_client
 
 
-def write2db(datatype, data, client, dbtype):
+def write2db(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
     """
     :param datatype: 数据类型
-    :param data: 数`据
+    :param data: 数据
     :param client: 数据库client
     :param dbtype: 数据库类型
     """
@@ -24,3 +25,5 @@ def write2db(datatype, data, client, dbtype):
         pass
     elif dbtype == DatabaseType.PROMETHEUS.value:
         pass
+
+# todo 封装write2db接口

@@ -7,7 +7,7 @@ import _thread
 
 # for influxdb
 from settings.init_db import influx_client
-from db_modules import write2db
+from db_writer.writer import write2db
 
 from datetime import datetime
 from settings.const import DatabaseType

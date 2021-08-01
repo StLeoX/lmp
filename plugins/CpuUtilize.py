@@ -7,7 +7,7 @@ from time import sleep
 # for influxdb
 from settings.const import DatabaseType
 from settings.init_db import influx_client
-from db_modules import write2db
+from db_writer.writer import write2db
 
 from datetime import datetime
 
@@ -30,6 +30,7 @@ data_struct = {"measurement": 'cpuutilize',
 b = BPF(src_file=r'./c/CpuUtilize.c')
 b.attach_kprobe(event="finish_task_switch", fn_name="pick_start")
 
+# b["dist"] is a hashtable
 dist = b.get_table("dist")
 
 cpu = [0, 0]

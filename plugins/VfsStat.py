@@ -22,7 +22,7 @@ from sys import argv
 
 from settings.const import DatabaseType
 from settings.init_db import influx_client
-from db_modules import write2db
+from db_writer.writer import write2db
 
 
 def usage():

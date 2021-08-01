@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-from db_modules import write2db
+from db_writer.writer import write2db
 from settings.init_db import influx_client
 
 # 在lmp项目中连接influxdb数据库使用lmp_influxdb模块中的connect()

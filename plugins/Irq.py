@@ -6,7 +6,7 @@ from time import sleep
 
 # for influxdb
 from settings.init_db import influx_client
-from db_modules import write2db
+from db_writer.writer import write2db
 from settings.const import DatabaseType
 
 from datetime import datetime

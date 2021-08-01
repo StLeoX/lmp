@@ -9,7 +9,7 @@ import argparse
 import utils
 from settings.const import DatabaseType
 from settings.init_db import influx_client
-from db_modules import write2db
+from db_writer.writer import write2db
 
 examples = """examples:
     ./srtt           # default 1000us
