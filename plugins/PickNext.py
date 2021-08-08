@@ -39,6 +39,7 @@ while (1):
     try:
         sleep(1)
         for k, v in dist.items():
+            #! item.v 存放的是 duration吗？
             # print("%-6d%-6d%-6d%-6d" % (k.cpu, k.pid, k.tgid, v.value))
             # test_data = lmp_data('glob', k.cpu, k.pid, v.value)
             test_data = lmp_data(datetime.now().isoformat(), 'glob', k.cpu, k.pid, v.value)

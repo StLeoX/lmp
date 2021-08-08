@@ -41,7 +41,7 @@ b.attach_kprobe(event="vfs_fsync", fn_name="do_fsync")
 b.attach_kprobe(event="vfs_open", fn_name="do_open")
 b.attach_kprobe(event="vfs_create", fn_name="do_create")
 
-data_struct = {"measurement": 'vfsstatTable',
+data_struct = {"measurement": 'vfsstat',
                "tags": ['glob'],
                "fields": ['total_read', 'total_write', 'total_create', 'total_open', 'total_fsync']}
 
