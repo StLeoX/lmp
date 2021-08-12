@@ -10,41 +10,90 @@ from db_writer_utils import Singleton, wlog
 from bufferImpl import Buffer
 from settings.const import DatabaseType
 
+__all__ = ['writer_factory']
+
 
 class Writer(Process):
-    def __init__(self, buffer_, client_, dbtype_):
-        super(Writer, self).__init__(name='db_writer', daemon=False)
-        self.buffer: Buffer = buffer_
+    def __init__(self, **kwargs):
+        super(Writer, self).__init__(name='writer', daemon=False)
+        self.client = None
+        self.buffer = None
+        self.ready_to_run = False
+
+    def run_init(self, client_, buffer_):
         self.client = client_
-        self.dbtype = dbtype_
+        self.buffer = buffer_
+        self.ready_to_run = True
 
     def run(self) -> None:
-        # 把switch放在外面有助于性能
-        if self.dbtype == DatabaseType.INFLUXDB.value:
-            while True:
-                try:
-                    item_ = self.buffer.get(timeout=5)  # 最多等待秒数，之后抛出Empty异常
-                    self.client.write_points(item_)
-                except KeyboardInterrupt:
-                    exit(15)
-                except queue.Empty:
-                    wlog.p_info('timeout')
-                    exit(14)
-        elif self.dbtype == DatabaseType.ES.value:
-            pass
-        elif self.dbtype == DatabaseType.MYSQL.value:
-            pass
-        elif self.dbtype == DatabaseType.PROMETHEUS.value:
-            pass
-        else:
-            raise NotImplementedError
+        # super(Writer, self).run()
+        assert self.ready_to_run == True, "ready?"
+
+
+class WriterInfluxdb(Writer):
+    def __init__(self):
+        super(WriterInfluxdb, self).__init__()
+
+    def run(self) -> None:
+        super(WriterInfluxdb, self).run()
+        while True:
+            try:
+                item_ = self.buffer.get(timeout=5)  # 最多等待秒数，之后抛出Empty异常
+                # ! special for influxdb here:
+                self.client.write_points(item_)
+            except KeyboardInterrupt:
+                exit(15)
+            except queue.Empty:
+                wlog.p_info('timeout')
+                exit(14)
+
+
+class WriterEs(Writer):
+    pass
+
+
+class WriterMysql(Writer):
+    pass
+
+
+class WriterPrometheus(Writer):
+    pass
 
 
 @Singleton
-class SingleWriter(Writer):
-    def __init__(self, buffer_, client_, dbtype_):
-        super(SingleWriter, self).__init__(buffer_, client_, dbtype_)
-        self.daemon = True  # 覆盖，设置成守护进程
+class SingleWriterInfluxdb(WriterInfluxdb):
+    def __init__(self):
+        super(SingleWriterInfluxdb, self).__init__()
+        self.daemon = True  # 覆盖，设置成守护进程 special
 
     def run(self) -> None:
-        super(SingleWriter, self).run()
+        super(SingleWriterInfluxdb, self).run()
+
+
+def writer_factory(dbtype_, client_, buffer_, single=False) -> Writer:
+    writer_: Writer = Writer()
+    if dbtype_ == DatabaseType.INFLUXDB.value:
+        writer_ = WriterInfluxdb()
+    elif dbtype_ == DatabaseType.ES.value:
+        writer_ = WriterEs()
+    elif dbtype_ == DatabaseType.MYSQL.value:
+        writer_ = WriterMysql()
+    elif dbtype_ == DatabaseType.PROMETHEUS.value:
+        writer_ = WriterPrometheus()
+    else:
+        raise NotImplementedError
+
+    if single:
+        if dbtype_ == DatabaseType.INFLUXDB.value:
+            writer_ = SingleWriterInfluxdb()
+        elif dbtype_ == DatabaseType.ES.value:
+            writer_ = Singleton(WriterEs)()  # 匿名类
+        elif dbtype_ == DatabaseType.MYSQL.value:
+            writer_ = Singleton(WriterMysql)()
+        elif dbtype_ == DatabaseType.PROMETHEUS.value:
+            writer_ = Singleton(WriterPrometheus)()
+        else:
+            raise NotImplementedError
+
+    writer_.run_init(client_, buffer_)
+    return writer_

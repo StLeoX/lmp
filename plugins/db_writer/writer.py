@@ -3,7 +3,7 @@
 from settings.const import DatabaseType
 from settings.init_db import influx_client
 from bufferImpl import Buffer, SingleBuffer
-from writerImpl import Writer, SingleWriter
+from writerImpl import writer_factory
 
 
 def write2db(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
@@ -41,7 +41,7 @@ def item_adepter(datatype_, data_):
 
 
 # 方案一实现
-def write_to_db01(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
+def write2db01(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
     """
     :param datatype: 数据类型
     :param data: 数据
@@ -49,7 +49,7 @@ def write_to_db01(datatype, data, client=influx_client, dbtype=DatabaseType.INFL
     :param dbtype: 数据库类型
     """
     buffer = Buffer()  # 每次调用都存在一个buffer
-    writer = Writer(buffer_=buffer, client_=client, dbtype_=dbtype)  # bind
+    writer = writer_factory(dbtype_=datatype, client_=client, buffer_=buffer)  # bind
     writer.start()  # spawn
     while True:
         try:
@@ -59,7 +59,7 @@ def write_to_db01(datatype, data, client=influx_client, dbtype=DatabaseType.INFL
 
 
 # 方案二实现：单例守护写进程
-def write_to_db02(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
+def write2db02(datatype, data, client=influx_client, dbtype=DatabaseType.INFLUXDB.value):
     """
     :param datatype: 数据类型
     :param data: 数据
@@ -67,7 +67,7 @@ def write_to_db02(datatype, data, client=influx_client, dbtype=DatabaseType.INFL
     :param dbtype: 数据库类型
     """
     buffer = SingleBuffer()  # 每次调用都存在一个buffer
-    writer = SingleWriter(buffer_=buffer, client_=client, dbtype_=dbtype)  # bind
+    writer = writer_factory(dbtype_=datatype, client_=client, buffer_=buffer, single=True)  # bind
     writer.start()  # spawn
     while True:
         try:
